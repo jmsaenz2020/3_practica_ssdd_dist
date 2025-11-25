@@ -2,7 +2,6 @@ package taller
 
 import (
   "fmt"
-  "time"
   "2_practica_ssdd_dist/utils"
 )
 
@@ -14,8 +13,7 @@ type Cliente struct{
   Vehiculos []Vehiculo
 }
 
-func (c *Cliente) Inicializar()
-{
+func (c *Cliente) Inicializar(){
   var exit bool = false
 
   utils.BoldMsg("ID")
@@ -54,13 +52,11 @@ func (c *Cliente) Inicializar()
   }
 }
 
-func (c Cliente) Info() (string)
-{
+func (c Cliente) Info() (string){
   return fmt.Sprintf("%s (%08d)", c.Nombre, c.Id)
 }
 
-func (c Cliente) Visualizar()
-{
+func (c Cliente) Visualizar(){
   fmt.Printf("%sID: %s%08d\n", utils.BOLD, utils.END, c.Id)
   fmt.Printf("%sNombre: %s%s\n", utils.BOLD, utils.END, c.Nombre)
   fmt.Printf("%sTeléfono: %s%09d\n", utils.BOLD, utils.END, c.Telefono)
@@ -69,8 +65,7 @@ func (c Cliente) Visualizar()
   c.ListarVehiculos()
 }
 
-func (c *Cliente) MenuVehiculos()
-{
+func (c *Cliente) MenuVehiculos(){
   var v Vehiculo  
   menu := []string{
     "Seleccione un vehículo",
@@ -106,11 +101,7 @@ func (c *Cliente) MenuVehiculos()
   }
 }
 
-func (c *Cliente) CrearVehiculo(v Vehiculo)
-{
-  v.TiempoAcumulado = make(chan time.Duration, 1)
-  v.TiempoAcumulado <- 0
-
+func (c *Cliente) CrearVehiculo(v Vehiculo){
   if v.Valido() && c.ObtenerIndiceVehiculo(v) == -1{
     c.Vehiculos = append(c.Vehiculos, v)
   } else {
@@ -118,8 +109,7 @@ func (c *Cliente) CrearVehiculo(v Vehiculo)
   }
 }
 
-func (c Cliente) SeleccionarVehiculo() (Vehiculo)
-{
+func (c Cliente) SeleccionarVehiculo() (Vehiculo){
   var v Vehiculo  
 
   if len(c.Vehiculos) > 0{
@@ -129,8 +119,7 @@ func (c Cliente) SeleccionarVehiculo() (Vehiculo)
   return v
 }
 
-func (c *Cliente) EliminarVehiculo(v Vehiculo)
-{
+func (c *Cliente) EliminarVehiculo(v Vehiculo){
 
   indice := c.ObtenerIndiceVehiculo(v)
     
@@ -144,8 +133,7 @@ func (c *Cliente) EliminarVehiculo(v Vehiculo)
   }
 }
 
-func (c Cliente) ListarVehiculos()
-{
+func (c Cliente) ListarVehiculos(){
   if len(c.Vehiculos) > 0{
     for _, v := range c.Vehiculos{
       fmt.Printf("  %s·%s%s\n", utils.BOLD, utils.END, v.Info())
@@ -155,8 +143,7 @@ func (c Cliente) ListarVehiculos()
   }
 }
 
-func (c *Cliente) Menu()
-{
+func (c *Cliente) Menu(){
   menu := []string{
     "Menu de cliente",
     "Visualizar",
@@ -182,8 +169,7 @@ func (c *Cliente) Menu()
   }
 }
 
-func (c *Cliente) Modificar()
-{
+func (c *Cliente) Modificar(){
   menu := []string{
     "Modificar datos de cliente",
     "ID",
@@ -224,18 +210,15 @@ func (c *Cliente) Modificar()
   }
 }
 
-func (c Cliente) Valido() (bool)
-{
+func (c Cliente) Valido() (bool){
   return c.Id > 0 && len(c.Nombre) > 0 && c.Telefono > 0 && len(c.Email) > 0
 }
 
-func (c1 Cliente) Igual(c2 Cliente) (bool)
-{
+func (c1 Cliente) Igual(c2 Cliente) (bool){
   return c1.Id == c2.Id
 }
 
-func (c Cliente) ObtenerIndiceVehiculo(v_in Vehiculo) (int)
-{
+func (c Cliente) ObtenerIndiceVehiculo(v_in Vehiculo) (int){
   var res int = -1
 
   for i, v := range c.Vehiculos{
@@ -247,8 +230,7 @@ func (c Cliente) ObtenerIndiceVehiculo(v_in Vehiculo) (int)
   return res
 }
 
-func (c Cliente) ObtenerVehiculoPorMatricula(matricula int) (Vehiculo)
-{
+func (c Cliente) ObtenerVehiculoPorMatricula(matricula int) (Vehiculo){
   var res Vehiculo  
 
   for _, v := range c.Vehiculos{
@@ -260,8 +242,7 @@ func (c Cliente) ObtenerVehiculoPorMatricula(matricula int) (Vehiculo)
   return res
 }
 
-func (c_in Cliente) ExisteCliente(clientes []Cliente) (bool)
-{
+func (c_in Cliente) ExisteCliente(clientes []Cliente) (bool){
   var existe bool = false
 
   for _, c := range clientes{
@@ -272,6 +253,4 @@ func (c_in Cliente) ExisteCliente(clientes []Cliente) (bool)
 
   return existe
 }
-
-
 

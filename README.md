@@ -4,7 +4,7 @@
 Dentro del directorio del repositorio, ejecute los siguientes comandos:
 ```
 $ cd src/
-$ go build .
+$ go build
 $ ./2_practica_ssdd_dist
 ```
 

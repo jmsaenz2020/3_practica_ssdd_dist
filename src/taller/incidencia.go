@@ -2,13 +2,13 @@ package taller
 
 import (
   "fmt"
+  "time"
   "2_practica_ssdd_dist/utils"
 )
 
 const TIEMPO_MECANICA = 5
 const TIEMPO_ELECTRONICA = 7
-const TIEMPO_CARROCERÍA = 11
-const MAX_TIEMPO = 15
+const TIEMPO_CARROCERIA = 11
 
 type Incidencia struct{
   Id int
@@ -19,13 +19,11 @@ type Incidencia struct{
   Estado int // 0 (Cerrado), 1 (Abierta), 2 (En proceso)
 }
 
-func (i Incidencia) Info() (string)
-{
+func (i Incidencia) Info() (string){
   return fmt.Sprintf("%s (%03d)", i.Descripcion, i.Id)
 }
 
-func (i Incidencia) Visualizar()
-{
+func (i Incidencia) Visualizar(){
   fmt.Printf("%sId: %s%03d\n", utils.BOLD, utils.END, i.Id)
   fmt.Printf("%sTipo: %s%d\n", utils.BOLD, utils.END, i.Tipo)
   fmt.Printf("%sPrioridad: %s%d\n", utils.BOLD, utils.END, i.Prioridad)
@@ -42,8 +40,7 @@ func (i Incidencia) Visualizar()
   }
 }
 
-func (i *Incidencia) Menu()
-{
+func (i *Incidencia) Menu(){
 menu := []string{
   "Menu de incidencia",
   "Visualizar",
@@ -69,8 +66,7 @@ for{
   }
 }
 
-func (i *Incidencia) Inicializar()
-{
+func (i *Incidencia) Inicializar(){
   var exit bool = false
 
   utils.BoldMsg("ID")
@@ -117,8 +113,22 @@ func (i *Incidencia) Inicializar()
 
 }
 
-func (i *Incidencia) Modificar()
-{
+func (i Incidencia) ObtenerDuracion() (time.Duration){
+  var tiempo time.Duration
+
+  switch(i.Tipo){
+    case 1:
+      tiempo = TIEMPO_MECANICA*time.Second
+    case 2:
+      tiempo = TIEMPO_ELECTRONICA*time.Second
+    case 3:
+      tiempo = TIEMPO_CARROCERIA*time.Second
+  }
+
+  return tiempo
+}
+
+func (i *Incidencia) Modificar(){
   
   menu := []string{
     "Modificar datos de incidencia",
@@ -151,18 +161,15 @@ func (i *Incidencia) Modificar()
   }
 }
 
-func (i Incidencia) Valido() (bool)
-{
+func (i Incidencia) Valido() (bool){
   return i.Id > 0
 }
 
-func (i1 Incidencia) Igual(i2 Incidencia) (bool)
-{
+func (i1 Incidencia) Igual(i2 Incidencia) (bool){
   return i1.Id == i2.Id
 }
 
-func (i Incidencia) TieneMecanico(m_in Mecanico) (bool)
-{
+func (i Incidencia) TieneMecanico(m_in Mecanico) (bool){
   var tiene bool = false
 
   for _, m := range i.Mecanicos{
@@ -175,8 +182,7 @@ func (i Incidencia) TieneMecanico(m_in Mecanico) (bool)
   return tiene
 }
 
-func (i *Incidencia) AsignarMecanico(m Mecanico)
-{
+func (i *Incidencia) AsignarMecanico(m Mecanico){
   if !i.TieneMecanico(m){
     i.Mecanicos = append(i.Mecanicos, m)
     if i.Estado == 1{

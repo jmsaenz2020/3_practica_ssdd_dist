@@ -6,6 +6,7 @@ import (
   "2_practica_ssdd_dist/utils"
 )
 
+const TIEMPO_ESPERA = 15 * time.Second
 
 type Vehiculo struct{
   Matricula int
@@ -14,22 +15,18 @@ type Vehiculo struct{
   FechaEntrada string
   FechaSalida string
   Incidencias []Incidencia
-  TiempoAcumulado chan time.Duration
 }
 
-func (v Vehiculo) Info() (string)
-{
+func (v Vehiculo) Info() (string){
   return fmt.Sprintf("%s %s (%05d)", v.Marca, v.Modelo, v.Matricula)
 }
 
-func (v Vehiculo) Visualizar()
-{
+func (v Vehiculo) Visualizar(){
   fmt.Printf("%sMatricula: %s%05d\n", utils.BOLD, utils.END, v.Matricula)
   fmt.Printf("%sMarca: %s%s\n", utils.BOLD, utils.END, v.Marca)
   fmt.Printf("%sModelo: %s%s\n", utils.BOLD, utils.END, v.Modelo)
   fmt.Printf("%sFecha de entrada: %s%s\n", utils.BOLD, utils.END, v.FechaEntrada)
   fmt.Printf("%sFecha estimada de entrada: %s%s\n", utils.BOLD, utils.END, v.FechaSalida)
-  fmt.Printf("%sTiempo acumulado: %s%d\n", utils.BOLD, utils.END, <-v.TiempoAcumulado)
   utils.BoldMsg("Incidencias: ")
   if len(v.Incidencias) > 0{
     for _, inc := range v.Incidencias{
@@ -40,9 +37,7 @@ func (v Vehiculo) Visualizar()
   }
 }
 
-func (v *Vehiculo) Menu()
-{
-  var t time.Duration
+func (v *Vehiculo) Menu(){
   menu := []string{
     "Menu de vehiculo",
     "Visualizar",
@@ -50,11 +45,6 @@ func (v *Vehiculo) Menu()
 
   for{
     menu[0] = fmt.Sprintf("Menu de %s", v.Info())
-
-    select{
-      case t = <- v.TiempoAcumulado:
-        v.TiempoAcumulado <- t
-    }
 
     opt, status := utils.MenuFunc(menu)
 
@@ -73,8 +63,7 @@ func (v *Vehiculo) Menu()
   }
 }
 
-func (v *Vehiculo) Inicializar()
-{
+func (v *Vehiculo) Inicializar(){
   var exit bool = false
 
   utils.BoldMsg("Matrícula")
@@ -121,8 +110,7 @@ func (v *Vehiculo) Inicializar()
   }
 }
 
-func (v *Vehiculo) Modificar()
-{
+func (v *Vehiculo) Modificar(){
 
   menu := []string{
     "Modificar datos de vehículo",
@@ -164,8 +152,28 @@ func (v *Vehiculo) Modificar()
   }
 }
 
-func (v *Vehiculo) MenuIncidencias()
-{
+func (v *Vehiculo)RutinaTaller(){
+  var t time.Duration
+
+  for i, inc := range v.Incidencias{
+    if len(inc.Mecanicos) > 0{
+      for t = 0; t <= inc.ObtenerDuracion(); t += time.Second{
+        time.Sleep(time.Second)
+      }
+      v.Incidencias[i].Estado = 0
+    } else {
+      for t = 0; t <= TIEMPO_ESPERA; t += time.Second{
+        time.Sleep(time.Second)
+      }
+      v.Incidencias[i].Prioridad = 1
+      // Asignar Mecánico
+      //msg := fmt.Sprintf("Incidencia \"%s\" asignada alta prioridad", inc.Info())
+      //utils.InfoMsg(msg)
+    }
+  }
+}
+
+func (v *Vehiculo) MenuIncidencias(){
   var i Incidencia
   menu := []string{
     "Seleccione una incidencia",
@@ -199,8 +207,7 @@ func (v *Vehiculo) MenuIncidencias()
   }
 }
 
-func (v Vehiculo) SeleccionarIncidencia() (Incidencia)
-{
+func (v Vehiculo) SeleccionarIncidencia() (Incidencia){
   var i Incidencia
 
   if len(v.Incidencias) > 0{
@@ -210,8 +217,7 @@ func (v Vehiculo) SeleccionarIncidencia() (Incidencia)
   return i
 }
 
-func (v *Vehiculo) EliminarIncidencia(i Incidencia)
-{
+func (v *Vehiculo) EliminarIncidencia(i Incidencia){
 
   indice := v.ObtenerIndiceIncidencia(i)
     
@@ -225,8 +231,7 @@ func (v *Vehiculo) EliminarIncidencia(i Incidencia)
   }
 }
 
-func (v Vehiculo) ObtenerIncidencia() (Incidencia)
-{
+func (v Vehiculo) ObtenerIncidencia() (Incidencia){
   var inc Incidencia
   
   menu := []string{"Seleccione una incidencia"}
@@ -250,8 +255,7 @@ func (v Vehiculo) ObtenerIncidencia() (Incidencia)
   return inc
 }
 
-func (v Vehiculo) ObtenerIndiceIncidencia(i_in Incidencia) (int)
-{
+func (v Vehiculo) ObtenerIndiceIncidencia(i_in Incidencia) (int){
   var res int = -1
 
   for i, inc := range v.Incidencias{
@@ -263,8 +267,7 @@ func (v Vehiculo) ObtenerIndiceIncidencia(i_in Incidencia) (int)
   return res
 }
 
-func (v *Vehiculo) CrearIncidencia(i Incidencia)
-{
+func (v *Vehiculo) CrearIncidencia(i Incidencia){
   if i.Valido() && v.ObtenerIndiceIncidencia(i) == -1{
     v.Incidencias = append(v.Incidencias, i)
   } else {
@@ -272,18 +275,15 @@ func (v *Vehiculo) CrearIncidencia(i Incidencia)
   }
 }
 
-func (v Vehiculo) Valido() (bool)
-{
+func (v Vehiculo) Valido() (bool){
   return v.Matricula > 0 && len(v.Marca) > 0 && len(v.Modelo) > 0
 }
 
-func (v1 Vehiculo) Igual(v2 Vehiculo) (bool)
-{
+func (v1 Vehiculo) Igual(v2 Vehiculo) (bool){
   return v1.Matricula == v2.Matricula
 }
 
-func (v Vehiculo) StringEstado() (string)
-{
+func (v Vehiculo) StringEstado() (string){
   var estado string = fmt.Sprintf("%s•%s", utils.GREEN, utils.END)
   var cerrado bool = true
 
