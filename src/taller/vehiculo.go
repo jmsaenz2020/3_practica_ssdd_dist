@@ -237,14 +237,13 @@ func (v Vehiculo) ObtenerIncidencia() (Incidencia){
 }
 
 func (v *Vehiculo)Rutina(t *Taller){
+  defer t.Grupo.Done()
   t.EntrarVehiculo(v)
-  utils.InfoMsg("Vehiculo entra al taller")
 
   for _, inc := range v.Incidencias{
     time.Sleep(inc.ObtenerDuracion())
   }
   t.SalirVehiculo(v)
-  utils.InfoMsg("Vehiculo sale del taller")
 }
 
 func (v Vehiculo) ObtenerIndiceIncidencia(i_in Incidencia) (int){

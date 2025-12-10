@@ -6,22 +6,26 @@ import (
 
 func main(){
   var t taller.Taller
-  
+
   // INICIALIZAR
   t.Inicializar()
   t.CrearMecanico("Pepe", 0, 0)
   t.CrearMecanico("Pepe", 0, 0)
   c := taller.Cliente{Id: 1, Nombre: "Laura", Telefono: 1, Email: "laura27@mail.com"}
   v := taller.Vehiculo{Matricula: 1234, Marca: "Toyota", Modelo: "Camry", FechaEntrada: "14-04-2009", FechaSalida: "19-04-2009"}
-  v.CrearIncidencia(1, 3, "Luna delantera rota")
+  v.CrearIncidencia(2, 3, "Luna delantera rota")
   v.Incidencias[0].AsignarMecanico(t.Mecanicos[0])
   c.CrearVehiculo(v)
   v = taller.Vehiculo{Matricula: 1235, Marca: "Toyota", Modelo: "Camry", FechaEntrada: "14-04-2009", FechaSalida: "19-04-2009"}
+  v.CrearIncidencia(1, 3, "Luna delantera rota")
+  v.Incidencias[0].AsignarMecanico(t.Mecanicos[0])
   c.CrearVehiculo(v)
   t.CrearCliente(c)
-  t.AsignarPlaza(&c.Vehiculos[0])
   t.AsignarPlaza(&c.Vehiculos[1])
+  t.AsignarPlaza(&c.Vehiculos[0])
   // FIN INICIALIZAR
 
-  select{} // Solucionar goroutine (no cases)
+    
+  t.Grupo.Wait()
+  //t.Liberar()
 }

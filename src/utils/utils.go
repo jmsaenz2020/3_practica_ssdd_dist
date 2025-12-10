@@ -20,7 +20,7 @@ func WarningMsg(msg string){
 }
 
 func InfoMsg(msg string){
-  fmt.Printf("%s%s%s\n", BLUE, msg, END)
+  fmt.Printf("%s\n", msg)
 }
 
 func BoldMsg(msg string){

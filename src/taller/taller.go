@@ -2,6 +2,7 @@ package taller
 
 import (
   "fmt"
+  "sync"
   "3_practica_ssdd_dist/utils"
 )
 
@@ -14,6 +15,7 @@ type Taller struct{
   Mecanicos []Mecanico
   UltimoIdMecanico int
   UltimoIdIncidencia int
+  Grupo sync.WaitGroup
 }
 
 func (t *Taller)Inicializar(){
@@ -223,12 +225,14 @@ func (t *Taller) AsignarPlaza(v *Vehiculo){
     select{
       case p := <- t.InfoPlazas:
          if !p.Valido(){
+          t.Grupo.Add(1)
           go v.Rutina(t)
           msg := fmt.Sprintf("Vehiculo asignado con éxito")
           utils.InfoMsg(msg)
         }
         t.InfoPlazas <- p
       default:
+        t.Grupo.Add(1)
         go v.Rutina(t)
         msg := fmt.Sprintf("Vehiculo asignado con éxito")
         utils.InfoMsg(msg)
@@ -277,10 +281,14 @@ func (t *Taller) AsignarVehiculo(){
 }
 
 func (t *Taller) EntrarVehiculo(v *Vehiculo){
+  msg := fmt.Sprintf("Vehiculo %s ha entrado al taller", v.Info())
+  utils.InfoMsg(msg)
   t.Plazas <- v
 }
 
 func (t *Taller) SalirVehiculo(v *Vehiculo){
+  msg := fmt.Sprintf("Vehiculo %s ha salido del taller", v.Info())
+  utils.InfoMsg(msg)
   <- t.Plazas
 }
 
