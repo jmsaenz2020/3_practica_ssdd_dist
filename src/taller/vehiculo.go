@@ -3,7 +3,7 @@ package taller
 import (
   "fmt"
   "time"
-  "2_practica_ssdd_dist/utils"
+  "3_practica_ssdd_dist/utils"
 )
 
 const TIEMPO_ESPERA = 15 * time.Second
@@ -65,6 +65,7 @@ func (v *Vehiculo) Menu(){
 
 func (v *Vehiculo) Inicializar(){
   var exit bool = false
+  var inc Incidencia
 
   utils.BoldMsg("Matrícula")
   utils.LeerInt(&v.Matricula)
@@ -105,8 +106,9 @@ func (v *Vehiculo) Inicializar(){
   }
 
   if !exit{
-    utils.BoldMsg("Incidencias")
-    v.MenuIncidencias()
+    utils.BoldMsg("Incidencia")
+    inc.Inicializar()
+    v.CrearIncidencia(inc.Tipo, inc.Prioridad, inc.Descripcion)
   }
 }
 
@@ -152,27 +154,6 @@ func (v *Vehiculo) Modificar(){
   }
 }
 
-func (v *Vehiculo)RutinaTaller(){
-  var t time.Duration
-
-  for i, inc := range v.Incidencias{
-    if len(inc.Mecanicos) > 0{
-      for t = 0; t <= inc.ObtenerDuracion(); t += time.Second{
-        time.Sleep(time.Second)
-      }
-      v.Incidencias[i].Estado = 0
-    } else {
-      for t = 0; t <= TIEMPO_ESPERA; t += time.Second{
-        time.Sleep(time.Second)
-      }
-      v.Incidencias[i].Prioridad = 1
-      // Asignar Mecánico
-      //msg := fmt.Sprintf("Incidencia \"%s\" asignada alta prioridad", inc.Info())
-      //utils.InfoMsg(msg)
-    }
-  }
-}
-
 func (v *Vehiculo) MenuIncidencias(){
   var i Incidencia
   menu := []string{
@@ -194,7 +175,7 @@ func (v *Vehiculo) MenuIncidencias(){
     if status == 0{
       if opt == 1{
         i.Inicializar()
-        v.CrearIncidencia(i)
+        v.CrearIncidencia(i.Tipo, i.Prioridad, i.Descripcion)
       } else if opt == 2{
         i = v.SeleccionarIncidencia()
         v.EliminarIncidencia(i)
@@ -255,6 +236,17 @@ func (v Vehiculo) ObtenerIncidencia() (Incidencia){
   return inc
 }
 
+func (v *Vehiculo)Rutina(t *Taller){
+  t.EntrarVehiculo(v)
+  utils.InfoMsg("Vehiculo entra al taller")
+
+  for _, inc := range v.Incidencias{
+    time.Sleep(inc.ObtenerDuracion())
+  }
+  t.SalirVehiculo(v)
+  utils.InfoMsg("Vehiculo sale del taller")
+}
+
 func (v Vehiculo) ObtenerIndiceIncidencia(i_in Incidencia) (int){
   var res int = -1
 
@@ -267,7 +259,14 @@ func (v Vehiculo) ObtenerIndiceIncidencia(i_in Incidencia) (int){
   return res
 }
 
-func (v *Vehiculo) CrearIncidencia(i Incidencia){
+func (v *Vehiculo) CrearIncidencia(tipo int, prioridad int, descripcion string){
+  var i Incidencia
+
+  i.Tipo = tipo
+  i.Prioridad = prioridad
+  i.Descripcion = descripcion
+  i.Id = 1
+
   if i.Valido() && v.ObtenerIndiceIncidencia(i) == -1{
     v.Incidencias = append(v.Incidencias, i)
   } else {

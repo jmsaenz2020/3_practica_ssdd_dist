@@ -2,18 +2,29 @@ package taller
 
 import (
   "fmt"
-  "2_practica_ssdd_dist/utils"
+  "3_practica_ssdd_dist/utils"
 )
 
 const PLAZAS_MECANICO = 2
 
 type Taller struct{
   Clientes []Cliente
-  Plazas []Vehiculo
+  Plazas chan *Vehiculo
+  InfoPlazas chan *Vehiculo
   Mecanicos []Mecanico
-  UltimoId int
+  UltimoIdMecanico int
+  UltimoIdIncidencia int
 }
 
+func (t *Taller)Inicializar(){
+  t.Plazas = make(chan *Vehiculo)
+  t.InfoPlazas = make(chan *Vehiculo)
+}
+
+func (t *Taller)Liberar(){
+  close(t.Plazas)
+  close(t.InfoPlazas)
+}
 
 func (t *Taller) MenuPrincipal(){
   menu := []string{
@@ -21,6 +32,7 @@ func (t *Taller) MenuPrincipal(){
     "Taller",
     "Clientes",
     "Mecánicos"}
+
 
   for{
     opt, status := utils.MenuFunc(menu)
@@ -206,16 +218,20 @@ func (t Taller) HayEspacio() (bool){
   return len(vehiculos) < PLAZAS_MECANICO*len(t.Mecanicos)
 }
 
-func (t *Taller) AsignarPlaza(v Vehiculo){
+func (t *Taller) AsignarPlaza(v *Vehiculo){
   if t.HayEspacio() && v.Valido() && len(v.Incidencias) > 0{
-    for i, p := range t.Plazas{ // Plaza libre
-      if !p.Valido(){
-        t.Plazas[i] = v
-        msg := fmt.Sprintf("Vehiculo asignado a la plaza %d", i + 1)
+    select{
+      case p := <- t.InfoPlazas:
+         if !p.Valido(){
+          go v.Rutina(t)
+          msg := fmt.Sprintf("Vehiculo asignado con éxito")
+          utils.InfoMsg(msg)
+        }
+        t.InfoPlazas <- p
+      default:
+        go v.Rutina(t)
+        msg := fmt.Sprintf("Vehiculo asignado con éxito")
         utils.InfoMsg(msg)
-        go t.Plazas[i].RutinaTaller()
-        return
-      }
     }
   } else if len(v.Incidencias) == 0{
     utils.WarningMsg("El vehiculo no tiene incidencias que atender")
@@ -224,21 +240,22 @@ func (t *Taller) AsignarPlaza(v Vehiculo){
 
 func (t Taller) Estado(){
   var v Vehiculo
+  var i int = 1
+  plazas := t.ObtenerPlazas()
 
-  for i := 0; i < PLAZAS_MECANICO*len(t.Mecanicos); i++{
-    fmt.Printf("%d.- ", i + 1)
-    v = t.Plazas[i]
+  for i, v = range plazas{
+    fmt.Printf("%d.- ", i)
     if v.Valido(){
       fmt.Printf("%s %s", v.StringEstado(), v.Info())
     }
-    fmt.Println() 
+    fmt.Println()
   }
 }
 
 func (t *Taller) AsignarVehiculo(){
   matriculas := t.ObtenerMatriculaVehiculos()
   var num int
-  var v Vehiculo
+  //var v Vehiculo
   var hayEspacio bool = t.HayEspacio()
 
   if len(matriculas) > 0 && hayEspacio{
@@ -248,15 +265,23 @@ func (t *Taller) AsignarVehiculo(){
     }
     fmt.Println("Escriba la matrícula del vehículo a asignar")
     utils.LeerInt(&num)
-    for _, c := range t.Clientes{
-      v = c.ObtenerVehiculoPorMatricula(num)
-      t.AsignarPlaza(v)
-    }
+    //for _, c := range t.Clientes{
+      //v = c.ObtenerVehiculoPorMatricula(num)
+      //t.AsignarPlaza(v)
+    //}
   } else if !hayEspacio{
     utils.WarningMsg("El taller está lleno")
   } else {
     utils.WarningMsg("No hay incidencias en el taller")
   }
+}
+
+func (t *Taller) EntrarVehiculo(v *Vehiculo){
+  t.Plazas <- v
+}
+
+func (t *Taller) SalirVehiculo(v *Vehiculo){
+  <- t.Plazas
 }
 
 func (t *Taller) AsignarMecanico(){
@@ -296,22 +321,34 @@ func (t *Taller) AsignarMecanico(){
   }
 }
 
+func (t *Taller)ModificarTaller(){
+  taller := make(chan *Vehiculo, PLAZAS_MECANICO*len(t.Mecanicos))
+
+  select{
+    case p := <- t.Plazas:
+      taller <- p
+    default:
+      close(taller)
+  }
+
+  t.Plazas = taller
+  t.InfoPlazas = taller
+}
+
 func (t *Taller) CrearMecanico(nombre string, especialidad int, experiencia int){
   var m Mecanico
-  var v Vehiculo // plazas vacias
 
   m.Nombre = nombre
   m.Especialidad = especialidad
   m.Experiencia = experiencia
-  m.Id = t.UltimoId + 1
+  m.Id = t.UltimoIdMecanico + 1
 
   if m.Valido() && t.ObtenerIndiceMecanico(m) == -1{
-    t.UltimoId++
-    m.Id = t.UltimoId
+    t.UltimoIdMecanico++
+    m.Id = t.UltimoIdMecanico
     m.Alta = true
     t.Mecanicos = append(t.Mecanicos, m)
-    t.Plazas = append(t.Plazas, v)
-    t.Plazas = append(t.Plazas, v)
+    go t.ModificarTaller()
   } else {
     utils.ErrorMsg("No se ha podido crear al mecanico")
   }
@@ -428,8 +465,8 @@ func (t Taller) ObtenerClientesEnTaller() ([]Cliente){
 
   for _, c := range t.Clientes{
     for _, v := range c.Vehiculos{
-      for _, p := range t.Plazas{
-        if v.Igual(p) && !c.ExisteCliente(clientes){
+      for p := range t.InfoPlazas{
+        if v.Igual(*p) && !c.ExisteCliente(clientes){
           clientes = append(clientes, c)
           break // Se ha encontrado el vehiculo del cliente
         }
@@ -456,10 +493,22 @@ func (t Taller) ObtenerMatriculaVehiculos() ([]int){
 
 func (t Taller) ObtenerPlazas() ([]Vehiculo){
   var vehiculos []Vehiculo
+  var v Vehiculo
+  var exit bool = false
 
-  for _, p := range t.Plazas{
-    if p.Valido(){
-      vehiculos = append(vehiculos, p)
+  for{
+    select{
+      case p := <- t.InfoPlazas:
+        v = *p
+        if v.Valido(){
+          vehiculos = append(vehiculos, v)
+        }
+        t.InfoPlazas <- p
+      default:
+        exit = true
+    }
+    if exit{
+      break
     }
   }
 

@@ -3,7 +3,7 @@ package taller
 import (
   "fmt"
   "time"
-  "2_practica_ssdd_dist/utils"
+  "3_practica_ssdd_dist/utils"
 )
 
 const TIEMPO_MECANICA = 5
