@@ -233,13 +233,15 @@ func (t *Taller) AsignarPlaza(v *Vehiculo){
     select{
       case p := <- t.Plazas:
          if !p.Valido(){
-          t.Grupo.Add(1)
-          go v.Rutina(t)
+          t.Cerradura.RUnlock()
+          t.EntrarVehiculo(v)
+          t.Cerradura.RLock()
         }
         t.Plazas <- p
       default:
-        t.Grupo.Add(1)
-        go v.Rutina(t)
+        t.Cerradura.RUnlock()
+        t.EntrarVehiculo(v)
+        t.Cerradura.RLock()
     }
     t.Cerradura.RUnlock()
   } else if len(v.Incidencias) == 0{
@@ -286,11 +288,11 @@ func (t *Taller) AsignarVehiculo(){
 }
 
 func (t *Taller) EntrarVehiculo(v *Vehiculo){
-  msg := fmt.Sprintf("Vehiculo %s ha entrado al taller", v.Info())
-  utils.InfoMsg(msg)
   t.Cerradura.Lock()
   t.Plazas <- v
   t.Cerradura.Unlock()
+  msg := fmt.Sprintf("Vehiculo %s ha entrado al taller", v.Info())
+  utils.InfoMsg(msg)
 }
 
 func (t *Taller) SalirVehiculo(v *Vehiculo){

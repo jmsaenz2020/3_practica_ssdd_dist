@@ -104,7 +104,10 @@ func (c *Cliente) MenuVehiculos(t *Taller){
 func (c *Cliente) CrearVehiculo(v Vehiculo, t *Taller){
   if v.Valido() && c.ObtenerIndiceVehiculo(v) == -1{
     c.Vehiculos = append(c.Vehiculos, v)
-    go v.Rutina(t)
+    if len(v.Incidencias) > 0{
+      t.Grupo.Add(1)
+      go v.Rutina(t)
+    }
   } else {
     utils.ErrorMsg("No se ha podido crear el vehículo")
   }

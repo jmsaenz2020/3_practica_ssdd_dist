@@ -15,7 +15,7 @@ type Vehiculo struct{
   Modelo string
   FechaEntrada string
   FechaSalida string
-  Incidencias []Incidencia
+  Incidencia Incidencia
 }
 
 func (v Vehiculo) Info() (string){
@@ -241,12 +241,15 @@ func (v *Vehiculo)Rutina(t *Taller){
   defer t.Grupo.Done()
   //var fase int = 1
 
-  t.EntrarVehiculo(v)
-
   // Fase 1
-  for _, inc := range v.Incidencias{
-    time.Sleep(inc.ObtenerDuracion())
+  t.EntrarVehiculo(v)
+  t.Grupo.Add(1)
+
+  // Fase 2 a 4
+  for i := 1; i <= NUM_FASES; i++{
+    time.Sleep(v.IncidenciaObtenerDuracion)
   }
+
   t.SalirVehiculo(v)
 }
 
