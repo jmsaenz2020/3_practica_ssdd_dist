@@ -7,6 +7,7 @@ import (
 )
 
 const TIEMPO_ESPERA = 15 * time.Second
+const NUM_FASES = 4
 
 type Vehiculo struct{
   Matricula int
@@ -108,7 +109,7 @@ func (v *Vehiculo) Inicializar(){
   if !exit{
     utils.BoldMsg("Incidencia")
     inc.Inicializar()
-    v.CrearIncidencia(inc.Tipo, inc.Prioridad, inc.Descripcion)
+    v.CrearIncidencia(inc.Tipo, inc.Descripcion)
   }
 }
 
@@ -175,7 +176,7 @@ func (v *Vehiculo) MenuIncidencias(){
     if status == 0{
       if opt == 1{
         i.Inicializar()
-        v.CrearIncidencia(i.Tipo, i.Prioridad, i.Descripcion)
+        v.CrearIncidencia(i.Tipo, i.Descripcion)
       } else if opt == 2{
         i = v.SeleccionarIncidencia()
         v.EliminarIncidencia(i)
@@ -238,8 +239,11 @@ func (v Vehiculo) ObtenerIncidencia() (Incidencia){
 
 func (v *Vehiculo)Rutina(t *Taller){
   defer t.Grupo.Done()
+  //var fase int = 1
+
   t.EntrarVehiculo(v)
 
+  // Fase 1
   for _, inc := range v.Incidencias{
     time.Sleep(inc.ObtenerDuracion())
   }
@@ -258,11 +262,11 @@ func (v Vehiculo) ObtenerIndiceIncidencia(i_in Incidencia) (int){
   return res
 }
 
-func (v *Vehiculo) CrearIncidencia(tipo int, prioridad int, descripcion string){
+func (v *Vehiculo) CrearIncidencia(tipo int, descripcion string){
   var i Incidencia
 
   i.Tipo = tipo
-  i.Prioridad = prioridad
+  i.Prioridad = tipo
   i.Descripcion = descripcion
   i.Id = 1
 

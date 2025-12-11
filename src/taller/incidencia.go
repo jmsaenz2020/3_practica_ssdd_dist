@@ -6,9 +6,9 @@ import (
   "3_practica_ssdd_dist/utils"
 )
 
-const TIEMPO_MECANICA = 5
-const TIEMPO_ELECTRONICA = 7
-const TIEMPO_CARROCERIA = 11
+const TIEMPO_ALTA = 5
+const TIEMPO_MEDIA = 3
+const TIEMPO_BAJA = 1
 
 type Incidencia struct{
   Id int
@@ -69,12 +69,6 @@ for{
 func (i *Incidencia) Inicializar(){
   var exit bool = false
 
-  utils.BoldMsg("ID")
-  utils.LeerInt(&i.Id)
-  if i.Id == 0{
-    exit = true
-  }
-
   if !exit{
     for{
       menu_esp := []string{
@@ -90,14 +84,6 @@ func (i *Incidencia) Inicializar(){
         exit = true
         break
       }
-    }
-  }
-
-  if !exit{
-  utils.BoldMsg("Prioridad")
-    utils.LeerInt(&i.Prioridad)
-    if i.Prioridad == 0{
-      exit = true
     }
   }
 
@@ -118,11 +104,11 @@ func (i Incidencia) ObtenerDuracion() (time.Duration){
 
   switch(i.Tipo){
     case 1:
-      tiempo = TIEMPO_MECANICA*time.Second
+      tiempo = TIEMPO_ALTA*time.Second
     case 2:
-      tiempo = TIEMPO_ELECTRONICA*time.Second
+      tiempo = TIEMPO_MEDIA*time.Second
     case 3:
-      tiempo = TIEMPO_CARROCERIA*time.Second
+      tiempo = TIEMPO_BAJA*time.Second
   }
 
   return tiempo
