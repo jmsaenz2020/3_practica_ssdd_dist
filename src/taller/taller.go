@@ -197,7 +197,7 @@ func (t *Taller) MenuClientes(){
     if status == 0{
       switch opt{
         case 1:
-          c.Inicializar()
+          c.Inicializar(t)
           t.CrearCliente(c)
           if !c.Valido() {
             utils.ErrorMsg("No se ha creado el cliente")
@@ -213,7 +213,7 @@ func (t *Taller) MenuClientes(){
             }
           }
         default:
-          t.Clientes[opt - 3].Menu()
+          t.Clientes[opt - 3].Menu(t)
       }
     } else if status == 2{
       break

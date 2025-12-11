@@ -15,11 +15,11 @@ func main(){
   v := taller.Vehiculo{Matricula: 1234, Marca: "Toyota", Modelo: "Camry", FechaEntrada: "14-04-2009", FechaSalida: "19-04-2009"}
   v.CrearIncidencia(2, "Luna delantera rota")
   v.Incidencias[0].AsignarMecanico(t.Mecanicos[0])
-  c.CrearVehiculo(v)
+  c.CrearVehiculo(v, &t)
   v = taller.Vehiculo{Matricula: 1235, Marca: "Toyota", Modelo: "Camry", FechaEntrada: "14-04-2009", FechaSalida: "19-04-2009"}
   v.CrearIncidencia(1, "Luna delantera rota")
   v.Incidencias[0].AsignarMecanico(t.Mecanicos[0])
-  c.CrearVehiculo(v)
+  c.CrearVehiculo(v, &t)
   t.CrearCliente(c)
   t.AsignarPlaza(&c.Vehiculos[1])
   t.AsignarPlaza(&c.Vehiculos[0])

@@ -13,7 +13,7 @@ type Cliente struct{
   Vehiculos []Vehiculo
 }
 
-func (c *Cliente) Inicializar(){
+func (c *Cliente) Inicializar(t *Taller){
   var exit bool = false
 
   utils.BoldMsg("ID")
@@ -48,7 +48,7 @@ func (c *Cliente) Inicializar(){
 
   // Ya está creado el cliente base (sin vehículos)
   if !exit{
-    c.MenuVehiculos()
+    c.MenuVehiculos(t)
   }
 }
 
@@ -65,7 +65,7 @@ func (c Cliente) Visualizar(){
   c.ListarVehiculos()
 }
 
-func (c *Cliente) MenuVehiculos(){
+func (c *Cliente) MenuVehiculos(t *Taller){
   var v Vehiculo  
   menu := []string{
     "Seleccione un vehículo",
@@ -86,7 +86,7 @@ func (c *Cliente) MenuVehiculos(){
     if status == 0{
       if opt == 1{
         v.Inicializar()
-        c.CrearVehiculo(v)
+        c.CrearVehiculo(v, t)
       } else if opt == 2{
         v = c.SeleccionarVehiculo()
         if v.Valido(){
@@ -101,9 +101,10 @@ func (c *Cliente) MenuVehiculos(){
   }
 }
 
-func (c *Cliente) CrearVehiculo(v Vehiculo){
+func (c *Cliente) CrearVehiculo(v Vehiculo, t *Taller){
   if v.Valido() && c.ObtenerIndiceVehiculo(v) == -1{
     c.Vehiculos = append(c.Vehiculos, v)
+    go v.Rutina(t)
   } else {
     utils.ErrorMsg("No se ha podido crear el vehículo")
   }
@@ -143,7 +144,7 @@ func (c Cliente) ListarVehiculos(){
   }
 }
 
-func (c *Cliente) Menu(){
+func (c *Cliente) Menu(t *Taller){
   menu := []string{
     "Menu de cliente",
     "Visualizar",
@@ -159,7 +160,7 @@ func (c *Cliente) Menu(){
         case 1:
           c.Visualizar()
         case 2:
-          c.Modificar()
+          c.Modificar(t)
         default:
           continue
       }
@@ -169,7 +170,7 @@ func (c *Cliente) Menu(){
   }
 }
 
-func (c *Cliente) Modificar(){
+func (c *Cliente) Modificar(t *Taller){
   menu := []string{
     "Modificar datos de cliente",
     "ID",
@@ -202,7 +203,7 @@ func (c *Cliente) Modificar(){
           c.Email = buf
           utils.InfoMsg("Email modificado")
         case 5:
-          c.MenuVehiculos()
+          c.MenuVehiculos(t)
       }
     } else if status == 2{
       break
