@@ -3,6 +3,7 @@ package taller
 import (
   "fmt"
   "sync"
+  "time"
   "3_practica_ssdd_dist/utils"
 )
 
@@ -16,10 +17,12 @@ type Taller struct{
   UltimoIdIncidencia int
   Grupo sync.WaitGroup
   Cerradura sync.RWMutex
+  TiempoInicio time.Time
 }
 
 func (t *Taller)Inicializar(){
   t.Plazas = make(chan *Vehiculo)
+  t.TiempoInicio = time.Now()
 }
 
 func (t *Taller)Liberar(){

@@ -200,9 +200,12 @@ func (v *Vehiculo)Rutina(t *Taller){
 
   // Fase 1 a 4
   for i := 1; i <= NUM_FASES; i++{
-    msg := fmt.Sprintf("Fase %d", i)
+    v.Incidencia.Estado = 2
+    tiempo := time.Now()
+    msg := fmt.Sprintf("Tiempo %s Coche Incidencia Fase %d Estado %s", tiempo.Sub(t.TiempoInicio), i, v.StringEstado())
     utils.InfoMsg(msg)
     time.Sleep(v.Incidencia.ObtenerDuracion())
+    v.Incidencia.Estado = 1
   }
 
   t.SalirVehiculo(v)
