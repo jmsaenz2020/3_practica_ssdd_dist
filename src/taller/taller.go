@@ -280,13 +280,9 @@ func (t *Taller) EntrarVehiculo(v *Vehiculo){
   t.Cerradura.Lock()
   t.Plazas <- v
   t.Cerradura.Unlock()
-  msg := fmt.Sprintf("Vehiculo %s ha entrado al taller", v.Info())
-  utils.InfoMsg(msg)
 }
 
 func (t *Taller) SalirVehiculo(v *Vehiculo){
-  msg := fmt.Sprintf("Vehiculo %s ha salido del taller", v.Info())
-  utils.InfoMsg(msg)
   t.Cerradura.Lock()
   <- t.Plazas
   t.Cerradura.Unlock()
