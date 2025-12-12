@@ -195,14 +195,13 @@ func (v *Vehiculo) EliminarIncidencia(){
 
 func (v *Vehiculo)Rutina(t *Taller){
   defer t.Grupo.Done()
-  //var fase int = 1
 
-  // Fase 1
-  t.EntrarVehiculo(v)
+  t.AsignarPlaza(v)
 
   // Fase 1 a 4
   for i := 1; i <= NUM_FASES; i++{
-    utils.InfoMsg("Fase 1")
+    msg := fmt.Sprintf("Fase %d", i)
+    utils.InfoMsg(msg)
     time.Sleep(v.Incidencia.ObtenerDuracion())
   }
 
@@ -225,7 +224,7 @@ func (v *Vehiculo) CrearIncidencia(tipo int, descripcion string){
 }
 
 func (v Vehiculo) Valido() (bool){
-  return v.Matricula > 0 && len(v.Marca) > 0 && len(v.Modelo) > 0
+  return v.Matricula > 0 && len(v.Marca) > 0 && len(v.Modelo) > 0 && v.Incidencia.Valido()
 }
 
 func (v1 Vehiculo) Igual(v2 Vehiculo) (bool){

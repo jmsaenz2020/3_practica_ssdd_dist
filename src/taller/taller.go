@@ -228,22 +228,8 @@ func (t Taller) HayEspacio() (bool){
 }
 
 func (t *Taller) AsignarPlaza(v *Vehiculo){
-  if t.HayEspacio() && v.Valido() && v.Incidencia.Valido(){
-    t.Cerradura.RLock()
-    select{
-      case p := <- t.Plazas:
-         if !p.Valido(){
-          t.Cerradura.RUnlock()
-          t.EntrarVehiculo(v)
-          t.Cerradura.RLock()
-        }
-        t.Plazas <- p
-      default:
-        t.Cerradura.RUnlock()
-        t.EntrarVehiculo(v)
-        t.Cerradura.RLock()
-    }
-    t.Cerradura.RUnlock()
+  if t.HayEspacio() && v.Valido(){
+    t.EntrarVehiculo(v)
   } else if v.Incidencia.Valido(){
     utils.WarningMsg("El vehiculo no tiene una incidencia definida")
   }
@@ -347,7 +333,9 @@ func (t *Taller)ModificarTaller(){
       close(taller)
   }
 
+  t.Cerradura.Lock()
   t.Plazas = taller
+  t.Cerradura.Unlock()
 }
 
 func (t *Taller) CrearMecanico(nombre string, especialidad int, experiencia int){
@@ -478,7 +466,7 @@ func (t Taller) ObtenerClientesEnTaller() ([]Cliente){
 
   for _, c := range t.Clientes{
     for _, v := range c.Vehiculos{
-      t.Cerradura.Lock()
+      t.Cerradura.RLock()
       for p := range t.Plazas{
         if v.Igual(*p) && !c.ExisteCliente(clientes){
           clientes = append(clientes, c)
@@ -521,10 +509,10 @@ func (t Taller) ObtenerPlazas() ([]Vehiculo){
         }
         t.Plazas <- p
       default:
+        t.Cerradura.RUnlock()
         exit = true
     }
     if exit{
-      t.Cerradura.RUnlock()
       break
     }
   }
