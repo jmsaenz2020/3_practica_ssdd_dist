@@ -28,13 +28,11 @@ func (v Vehiculo) Visualizar(){
   fmt.Printf("%sModelo: %s%s\n", utils.BOLD, utils.END, v.Modelo)
   fmt.Printf("%sFecha de entrada: %s%s\n", utils.BOLD, utils.END, v.FechaEntrada)
   fmt.Printf("%sFecha estimada de entrada: %s%s\n", utils.BOLD, utils.END, v.FechaSalida)
-  utils.BoldMsg("Incidencias: ")
-  if len(v.Incidencias) > 0{
-    for _, inc := range v.Incidencias{
-      fmt.Printf("  ·", inc.Info())
-    }
+  utils.BoldMsg("Incidencia: ")
+  if v.Incidencia.Valido(){
+    fmt.Printf("  ·", v.Incidencia.Info())
   } else {
-    utils.BoldMsg("SIN INCIDENCIAS")
+    utils.BoldMsg("SIN INCIDENCIA")
   }
 }
 
@@ -54,7 +52,7 @@ func (v *Vehiculo) Menu(){
         case 1:
           v.Visualizar()
         case 2:
-          v.Modificar()
+          //v.Modificar()
         default:
           continue
       }
@@ -112,7 +110,7 @@ func (v *Vehiculo) Inicializar(){
     v.CrearIncidencia(inc.Tipo, inc.Descripcion)
   }
 }
-
+/*
 func (v *Vehiculo) Modificar(){
 
   menu := []string{
@@ -153,8 +151,8 @@ func (v *Vehiculo) Modificar(){
       break
     }
   }
-}
-
+}*/
+/*
 func (v *Vehiculo) MenuIncidencias(){
   var i Incidencia
   menu := []string{
@@ -188,53 +186,11 @@ func (v *Vehiculo) MenuIncidencias(){
     }
   }
 }
+*/
 
-func (v Vehiculo) SeleccionarIncidencia() (Incidencia){
+func (v *Vehiculo) EliminarIncidencia(){
   var i Incidencia
-
-  if len(v.Incidencias) > 0{
-    i = v.Incidencias[0]
-  }
-
-  return i
-}
-
-func (v *Vehiculo) EliminarIncidencia(i Incidencia){
-
-  indice := v.ObtenerIndiceIncidencia(i)
-    
-  if indice >= 0{ // Eliminar
-    lista := v.Incidencias
-    lista[indice] = lista[len(lista)-1]
-    lista = lista[:len(lista)-1]
-    v.Incidencias = lista
-  } else {
-    utils.ErrorMsg("No se pudo eliminar la incidencia")
-  }
-}
-
-func (v Vehiculo) ObtenerIncidencia() (Incidencia){
-  var inc Incidencia
-  
-  menu := []string{"Seleccione una incidencia"}
-
-  for{
-    menu = []string{"Seleccione una incidencia"}
-    for _, i := range v.Incidencias{
-      menu = append(menu, i.Info())
-    }
-
-    opt, status := utils.MenuFunc(menu)
-
-    if status != 1{
-      if status == 0{
-        inc = v.Incidencias[opt - 1]
-      }
-      break
-    }
-  }
-
-  return inc
+  v.Incidencia = i
 }
 
 func (v *Vehiculo)Rutina(t *Taller){
@@ -243,26 +199,14 @@ func (v *Vehiculo)Rutina(t *Taller){
 
   // Fase 1
   t.EntrarVehiculo(v)
-  t.Grupo.Add(1)
 
-  // Fase 2 a 4
+  // Fase 1 a 4
   for i := 1; i <= NUM_FASES; i++{
-    time.Sleep(v.IncidenciaObtenerDuracion)
+    utils.InfoMsg("Fase 1")
+    time.Sleep(v.Incidencia.ObtenerDuracion())
   }
 
   t.SalirVehiculo(v)
-}
-
-func (v Vehiculo) ObtenerIndiceIncidencia(i_in Incidencia) (int){
-  var res int = -1
-
-  for i, inc := range v.Incidencias{
-    if inc.Igual(i_in){
-      res = i
-    }
-  }
-
-  return res
 }
 
 func (v *Vehiculo) CrearIncidencia(tipo int, descripcion string){
@@ -273,8 +217,8 @@ func (v *Vehiculo) CrearIncidencia(tipo int, descripcion string){
   i.Descripcion = descripcion
   i.Id = 1
 
-  if i.Valido() && v.ObtenerIndiceIncidencia(i) == -1{
-    v.Incidencias = append(v.Incidencias, i)
+  if i.Valido(){
+    v.Incidencia = i
   } else {
     utils.ErrorMsg("No se ha podido crear el vehículo")
   }
@@ -289,22 +233,17 @@ func (v1 Vehiculo) Igual(v2 Vehiculo) (bool){
 }
 
 func (v Vehiculo) StringEstado() (string){
-  var estado string = fmt.Sprintf("%s•%s", utils.GREEN, utils.END)
-  var cerrado bool = true
+  var estado string
 
-  for _, inc := range v.Incidencias{
-    if inc.Estado == 2{
-      estado = fmt.Sprintf("%s•%s", utils.YELLOW, utils.END)
-      return estado
-    } else if inc.Estado == 1{
-      cerrado = false
-    }
+  switch(v.Incidencia.Estado){
+    case 0:
+      estado = utils.RED
+    case 1:
+      estado = utils.GREEN
+    case 2:
+      estado = utils.YELLOW
   }
 
-  if cerrado{
-    estado = fmt.Sprintf("%s•%s", utils.RED, utils.END)
-  }
-
-  return estado
+  return fmt.Sprintf("%s•%s", estado, utils.END)
 }
 

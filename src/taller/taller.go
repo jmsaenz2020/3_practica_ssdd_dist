@@ -228,7 +228,7 @@ func (t Taller) HayEspacio() (bool){
 }
 
 func (t *Taller) AsignarPlaza(v *Vehiculo){
-  if t.HayEspacio() && v.Valido() && len(v.Incidencias) > 0{
+  if t.HayEspacio() && v.Valido() && v.Incidencia.Valido(){
     t.Cerradura.RLock()
     select{
       case p := <- t.Plazas:
@@ -244,8 +244,8 @@ func (t *Taller) AsignarPlaza(v *Vehiculo){
         t.Cerradura.RLock()
     }
     t.Cerradura.RUnlock()
-  } else if len(v.Incidencias) == 0{
-    utils.WarningMsg("El vehiculo no tiene incidencias que atender")
+  } else if v.Incidencia.Valido(){
+    utils.WarningMsg("El vehiculo no tiene una incidencia definida")
   }
 }
 
@@ -319,13 +319,10 @@ func (t *Taller) AsignarMecanico(){
 
       if status == 0{
         plaza = plazas[opt - 1]
-        if len(plaza.Incidencias) > 0{
-          inc := plaza.ObtenerIncidencia()
-          if inc.Valido(){
-            m := t.SeleccionarMecanico()
-            if m.Valido(){
-              inc.AsignarMecanico(m)
-            }
+        if plaza.Incidencia.Valido(){
+          m := t.SeleccionarMecanico()
+          if m.Valido(){
+            plaza.Incidencia.AsignarMecanico(m)
           }
         } else {
           utils.WarningMsg("El vehiculo no tiene incidencias")
@@ -469,9 +466,7 @@ func (t Taller) ObtenerIncidencias() ([]Incidencia){
 
   for _, c := range t.Clientes{
     for _, v := range c.Vehiculos{
-      for _, inc := range v.Incidencias{
-        incidencias = append(incidencias, inc)
-      }
+      incidencias = append(incidencias, v.Incidencia)
     }
   }
 
@@ -502,7 +497,7 @@ func (t Taller) ObtenerMatriculaVehiculos() ([]int){
 
   for _, c := range t.Clientes{
     for _, v := range c.Vehiculos{
-      if len(v.Incidencias) > 0{
+      if v.Incidencia.Valido(){
         matriculas = append(matriculas, v.Matricula)
       }
     }
