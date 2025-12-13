@@ -29,7 +29,7 @@ func (c Cliente) Visualizar(){
 func (c *Cliente) CrearVehiculo(v Vehiculo, t *Taller){
   if v.Valido() && c.ObtenerIndiceVehiculo(v) == -1{
     c.Vehiculos = append(c.Vehiculos, v)
-    t.Grupo.Add(1)
+    //t.Grupo.Add(1)
     go v.Rutina(t)
   } else {
     utils.ErrorMsg("No se ha podido crear el vehículo")

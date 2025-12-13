@@ -30,7 +30,7 @@ func (v Vehiculo) Visualizar(){
   fmt.Printf("%sFecha estimada de entrada: %s%s\n", utils.BOLD, utils.END, v.FechaSalida)
   utils.BoldMsg("Incidencia: ")
   if v.Incidencia.Valido(){
-    fmt.Printf("  ·", v.Incidencia.Info())
+    fmt.Printf("  ·%s", v.Incidencia.Info())
   } else {
     utils.BoldMsg("SIN INCIDENCIA")
   }
@@ -40,40 +40,14 @@ func (v Vehiculo) StringMatricula() (string){
   return fmt.Sprintf("%05d", v.Matricula)
 }
 
-func (v *Vehiculo) Menu(){
-  menu := []string{
-    "Menu de vehiculo",
-    "Visualizar",
-    "Modificar"}
-
-  for{
-    menu[0] = fmt.Sprintf("Menu de %s", v.Info())
-
-    opt, status := utils.MenuFunc(menu)
-
-    if status == 0{
-      switch opt{
-        case 1:
-          v.Visualizar()
-        case 2:
-          //v.Modificar()
-        default:
-          continue
-      }
-    } else if status == 2{
-      break
-    }
-  }
-}
-
 func (v *Vehiculo) EliminarIncidencia(){
   var i Incidencia
   v.Incidencia = i // Incidencia vacia
 }
 
-func (v Vehiculo)Log(fase int, t Taller){
+func (v Vehiculo)Log(fase int, inicio time.Time){
     tiempo := time.Now()
-    msg := fmt.Sprintf("Tiempo %s Coche %s Incidencia %d Fase %d Estado %d", tiempo.Sub(t.TiempoInicio), v.StringMatricula(), v.Incidencia.Id, fase, v.Incidencia.Estado)
+    msg := fmt.Sprintf("Tiempo %s Coche %s Incidencia %d Fase %d Estado %d", tiempo.Sub(inicio), v.StringMatricula(), v.Incidencia.Id, fase, v.Incidencia.Estado)
     utils.InfoMsg(msg)
 }
 
@@ -85,10 +59,14 @@ func (v *Vehiculo)Rutina(t *Taller){
   // Fase 1 a 4
   for i := 1; i <= NUM_FASES; i++{
     v.Incidencia.Estado = 2
-    v.Log(i, *t)
+    v.Log(i, t.TiempoInicio)
     time.Sleep(v.Incidencia.ObtenerDuracion())
-    v.Incidencia.Estado = 1
-    v.Log(i, *t)
+    if i == NUM_FASES{
+      v.Incidencia.Estado = 0
+    } else {
+      v.Incidencia.Estado = 1
+    }
+    v.Log(i, t.TiempoInicio)
   }
 
   t.SalirVehiculo(v)

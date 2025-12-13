@@ -32,71 +32,12 @@ func (i Incidencia) Visualizar(){
   utils.BoldMsg("MECÁNICOS")
   if len(i.Mecanicos) > 0{
     for _, m := range i.Mecanicos{
-      fmt.Printf("  ·", m.Info())
+      fmt.Printf("  ·%s", m.Info())
     }
     fmt.Println()
   } else {
     utils.BoldMsg("SIN MECÁNICOS")
   }
-}
-
-func (i *Incidencia) Menu(){
-menu := []string{
-  "Menu de incidencia",
-  "Visualizar",
-  "Modificar"}
-
-for{
-  menu[0] = fmt.Sprintf("Menu de %s", i.Info())
-
-  opt, status := utils.MenuFunc(menu)
-
-  if status == 0{
-    switch opt{
-      case 1:
-        i.Visualizar()
-      case 2:
-        i.Modificar()
-        default:
-          continue
-      }
-    } else if status == 2{
-      break
-    }
-  }
-}
-
-func (i *Incidencia) Inicializar(){
-  var exit bool = false
-
-  if !exit{
-    for{
-      menu_esp := []string{
-        "Selecciona tipo",
-        "Mecánica",
-        "Electrónica",
-        "Carrocería"}
-      opt, status := utils.MenuFunc(menu_esp)
-      if status == 0{
-        i.Tipo = opt - 1
-        break
-      } else if status == 2{
-        exit = true
-        break
-      }
-    }
-  }
-
-  if !exit{
-  utils.BoldMsg("Descripción")
-    utils.LeerStr(&i.Descripcion)
-    if len(i.Descripcion) == 0{
-      exit = true
-    } else {
-      i.Estado = 1
-    }
-  }
-
 }
 
 func (i Incidencia) ObtenerDuracion() (time.Duration){
@@ -112,39 +53,6 @@ func (i Incidencia) ObtenerDuracion() (time.Duration){
   }
 
   return tiempo
-}
-
-func (i *Incidencia) Modificar(){
-  
-  menu := []string{
-    "Modificar datos de incidencia",
-    "Tipo",
-    "Prioridad",
-    "Descripción"}
-  var buf string
-  var num int
-
-  for{
-    opt, status := utils.MenuFunc(menu)
-    if status == 0{
-      switch opt{
-        case 1:
-          utils.LeerInt(&num)
-          i.Tipo = num
-          utils.InfoMsg("Tipo de incidencia modificado")
-        case 2:
-          utils.LeerInt(&num)
-          i.Prioridad = num
-          utils.InfoMsg("Prioridad modificada")
-        case 3:
-          utils.LeerStr(&buf)
-          i.Descripcion = buf
-          utils.InfoMsg("Descripción modificada")
-      }
-    } else if status == 2{
-      break
-    }
-  }
 }
 
 func (i Incidencia) Valido() (bool){

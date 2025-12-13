@@ -66,33 +66,8 @@ func (t Taller) Estado(){
   }
 }
 
-func (t *Taller) AsignarVehiculo(){
-  matriculas := t.ObtenerMatriculaVehiculos()
-  var num int
-  //var v Vehiculo
-  var hayEspacio bool = t.HayEspacio()
-
-  if len(matriculas) > 0 && hayEspacio{
-    utils.BoldMsg("VEHICULOS DISPONIBLES")
-    for _, m := range matriculas{
-      fmt.Println(m)
-    }
-    fmt.Println("Escriba la matrícula del vehículo a asignar")
-    utils.LeerInt(&num)
-    //for _, c := range t.Clientes{
-      //v = c.ObtenerVehiculoPorMatricula(num)
-      //t.AsignarPlaza(v)
-    //}
-  } else if !hayEspacio{
-    utils.WarningMsg("El taller está lleno")
-  } else {
-    utils.WarningMsg("No hay incidencias en el taller")
-  }
-}
-
 func (t *Taller) EntrarVehiculo(v *Vehiculo){
   t.Cerradura.Lock()
-  utils.InfoMsg("entra vehiculo")
   t.Plazas <- v
   t.Cerradura.Unlock()
 }
@@ -279,20 +254,22 @@ func (t Taller) ObtenerPlazas() ([]Vehiculo){
   var v Vehiculo
   var exit bool = false
 
+  t.Cerradura.Lock()
   for{
-    t.Cerradura.RLock()
     select{
       case p := <- t.Plazas:
-        v = *p
-        if v.Valido(){
-          vehiculos = append(vehiculos, v)
+        if p != nil{
+          v = *p
+          if v.Valido(){
+            vehiculos = append(vehiculos, v)
+          }
         }
         t.Plazas <- p
       default:
-        t.Cerradura.RUnlock()
         exit = true
     }
     if exit{
+      t.Cerradura.Unlock()
       break
     }
   }
@@ -310,32 +287,6 @@ func (t Taller) ObtenerIncidenciasMecanico(m_in Mecanico) ([]Incidencia){
   }
 
   return incidencias
-}
-
-func (t Taller) IncidenciasMecanico(){
-  menu := []string{"Seleccione el mecánico"}
-
-  for _, m := range t.Mecanicos{
-    menu = append(menu, m.Info())
-  }
-
-  for{
-    opt, status := utils.MenuFunc(menu)
-
-    if status != 1{
-      if status == 0{
-        incidencias := t.ObtenerIncidenciasMecanico(t.Mecanicos[opt - 1])
-        if len(incidencias) == 0{
-          utils.BoldMsg("SIN INCIDENCIAS")
-        } else {
-          for _, inc := range incidencias{
-            fmt.Println(inc.Info())
-          }
-        }
-      }
-      break
-    }
-  }
 }
 
 func (t Taller) MecanicosDisponibles(){
