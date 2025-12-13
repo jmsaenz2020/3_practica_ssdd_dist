@@ -56,7 +56,7 @@ func (i Incidencia) ObtenerDuracion() (time.Duration){
 }
 
 func (i Incidencia) Valido() (bool){
-  return i.Id > 0
+  return i.Id > 0 && i.Tipo >= 1 && i.Tipo <= 3 && i.Prioridad >= 1 && i.Prioridad <= 3 && i.Estado >= 0 && i.Estado <= 2 && len(i.Descripcion) > 0
 }
 
 func (i1 Incidencia) Igual(i2 Incidencia) (bool){

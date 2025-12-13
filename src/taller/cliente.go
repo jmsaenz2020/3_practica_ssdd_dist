@@ -13,6 +13,10 @@ type Cliente struct{
   Vehiculos []Vehiculo
 }
 
+const MAX_ID_CLIENTE = 100000000 - 1
+const MAX_TELEFONO_CLIENTE = 1000000000 - 1
+
+
 func (c Cliente) Info() (string){
   return fmt.Sprintf("%s (%08d)", c.Nombre, c.Id)
 }
@@ -29,10 +33,24 @@ func (c Cliente) Visualizar(){
 func (c *Cliente) CrearVehiculo(v Vehiculo, t *Taller){
   if v.Valido() && c.ObtenerIndiceVehiculo(v) == -1{
     c.Vehiculos = append(c.Vehiculos, v)
-    //t.Grupo.Add(1)
-    go v.Rutina(t)
+    if v.Incidencia.Valido(){
+      t.Grupo.Add(1)
+      go c.Vehiculos[len(c.Vehiculos) - 1].Rutina(t)
+    }
   } else {
     utils.ErrorMsg("No se ha podido crear el vehículo")
+  }
+}
+
+func (c *Cliente) ModificarIncidenciaVehiculo(v Vehiculo, tipo int, desc string, t *Taller){
+  var indice int = c.ObtenerIndiceVehiculo(v)
+
+  if v.Valido() && indice >= 0{
+    c.Vehiculos[indice].ModificarIncidencia(tipo, desc)
+    t.Grupo.Add(1)
+    go c.Vehiculos[indice].Rutina(t)
+  } else {
+    utils.ErrorMsg("El vehiculo no existe o no está en propiedad del cliente")
   }
 }
 
@@ -71,7 +89,7 @@ func (c Cliente) ListarVehiculos(){
 }
 
 func (c Cliente) Valido() (bool){
-  return c.Id > 0 && len(c.Nombre) > 0 && c.Telefono > 0 && len(c.Email) > 0
+  return c.Id > 0 && c.Id <= MAX_ID_CLIENTE && len(c.Nombre) > 0 && c.Telefono > 0  && c.Telefono <= MAX_TELEFONO_CLIENTE && len(c.Email) > 0
 }
 
 func (c1 Cliente) Igual(c2 Cliente) (bool){

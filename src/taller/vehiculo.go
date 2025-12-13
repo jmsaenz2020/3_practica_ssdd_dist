@@ -8,6 +8,7 @@ import (
 
 const TIEMPO_ESPERA = 15 * time.Second
 const NUM_FASES = 4
+const MAX_MATRICULA = 100000 - 1
 
 type Vehiculo struct{
   Matricula int
@@ -54,25 +55,27 @@ func (v Vehiculo)Log(fase int, inicio time.Time){
 func (v *Vehiculo)Rutina(t *Taller){
   defer t.Grupo.Done()
 
-  t.AsignarPlaza(v)
+  ok := t.AsignarPlaza(v)
 
-  // Fase 1 a 4
-  for i := 1; i <= NUM_FASES; i++{
-    v.Incidencia.Estado = 2
-    v.Log(i, t.TiempoInicio)
-    time.Sleep(v.Incidencia.ObtenerDuracion())
-    if i == NUM_FASES{
-      v.Incidencia.Estado = 0
-    } else {
-      v.Incidencia.Estado = 1
+  if ok{
+    // Fase 1 a 4
+    for i := 1; i <= NUM_FASES; i++{
+      v.Incidencia.Estado = 2
+      v.Log(i, t.TiempoInicio)
+      time.Sleep(v.Incidencia.ObtenerDuracion())
+      if i == NUM_FASES{
+        v.Incidencia.Estado = 0
+      } else {
+        v.Incidencia.Estado = 1
+      }
+      v.Log(i, t.TiempoInicio)
     }
-    v.Log(i, t.TiempoInicio)
-  }
 
-  t.SalirVehiculo(v)
+    t.SalirVehiculo(v)
+  }
 }
 
-func (v *Vehiculo) CrearIncidencia(tipo int, descripcion string){
+func (v *Vehiculo) ModificarIncidencia(tipo int, descripcion string){
   var i Incidencia
 
   i.Tipo = tipo
@@ -83,12 +86,12 @@ func (v *Vehiculo) CrearIncidencia(tipo int, descripcion string){
   if i.Valido(){
     v.Incidencia = i
   } else {
-    utils.ErrorMsg("No se ha podido crear el vehículo")
+    utils.ErrorMsg("No se ha podido crear la incidencia")
   }
 }
 
 func (v Vehiculo) Valido() (bool){
-  return v.Matricula > 0 && len(v.Marca) > 0 && len(v.Modelo) > 0 && v.Incidencia.Valido()
+  return v.Matricula > 0 && v.Matricula <= MAX_MATRICULA && len(v.Marca) > 0 && len(v.Modelo) > 0
 }
 
 func (v1 Vehiculo) Igual(v2 Vehiculo) (bool){

@@ -26,6 +26,7 @@ func (t *Taller)Inicializar(){
 }
 
 func (t *Taller)Liberar(){
+  t.Grupo.Wait()
   t.Cerradura.Lock()
   select{
     case _, ok := <- t.Plazas:
@@ -44,12 +45,14 @@ func (t Taller) HayEspacio() (bool){
   return len(vehiculos) < PLAZAS_MECANICO*len(t.Mecanicos)
 }
 
-func (t *Taller) AsignarPlaza(v *Vehiculo){
-  if t.HayEspacio() && v.Valido(){
+func (t *Taller) AsignarPlaza(v *Vehiculo) (bool){
+  if t.HayEspacio() && v.Valido() && v.Incidencia.Valido(){
     t.EntrarVehiculo(v)
-  } else if v.Incidencia.Valido(){
+    return true
+  } else if !v.Incidencia.Valido(){
     utils.WarningMsg("El vehiculo no tiene una incidencia definida")
   }
+  return false
 }
 
 func (t Taller) Estado(){
@@ -137,7 +140,8 @@ func (t *Taller) EliminarCliente(c Cliente){
     
   if indice >= 0{ // Eliminar
     lista := t.Clientes
-    lista = lista[:indice+copy(lista[indice:], lista[indice+1:])]
+    lista[indice] = lista[len(lista)-1]
+    lista = lista[:len(lista)-1]
     t.Clientes = lista
   } else {
     utils.ErrorMsg("No se pudo eliminar al mecánico")
