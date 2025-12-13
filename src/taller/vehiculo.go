@@ -55,6 +55,7 @@ func (v Vehiculo)Log(fase int, inicio time.Time){
 func (v *Vehiculo)Rutina(t *Taller){
   defer t.Grupo.Done()
 
+  t.Grupo.Add(1)
   ok := t.AsignarPlaza(v)
 
   if ok{

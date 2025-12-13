@@ -16,6 +16,7 @@ type Cliente struct{
 const MAX_ID_CLIENTE = 100000000 - 1
 const MAX_TELEFONO_CLIENTE = 1000000000 - 1
 
+var count int = 0
 
 func (c Cliente) Info() (string){
   return fmt.Sprintf("%s (%08d)", c.Nombre, c.Id)
@@ -34,7 +35,6 @@ func (c *Cliente) CrearVehiculo(v Vehiculo, t *Taller){
   if v.Valido() && c.ObtenerIndiceVehiculo(v) == -1{
     c.Vehiculos = append(c.Vehiculos, v)
     if v.Incidencia.Valido(){
-      t.Grupo.Add(1)
       go c.Vehiculos[len(c.Vehiculos) - 1].Rutina(t)
     }
   } else {
@@ -45,7 +45,7 @@ func (c *Cliente) CrearVehiculo(v Vehiculo, t *Taller){
 func (c *Cliente) ModificarIncidenciaVehiculo(v Vehiculo, tipo int, desc string, t *Taller){
   var indice int = c.ObtenerIndiceVehiculo(v)
 
-  if v.Valido() && indice >= 0{
+  if v.Valido() && indice >= 0 && !t.CocheEnTaller(v){
     c.Vehiculos[indice].ModificarIncidencia(tipo, desc)
     t.Grupo.Add(1)
     go c.Vehiculos[indice].Rutina(t)

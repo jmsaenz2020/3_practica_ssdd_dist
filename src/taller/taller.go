@@ -39,6 +39,13 @@ func (t *Taller)Liberar(){
   t.Cerradura.Unlock()
 }
 
+func (t Taller) CocheEnTaller(v Vehiculo) (bool){
+  var c Cliente
+  c.Vehiculos = t.ObtenerPlazas()
+
+  return c.ObtenerIndiceVehiculo(v) >= 0
+}
+
 func (t Taller) HayEspacio() (bool){
   vehiculos := t.ObtenerPlazas()
 
