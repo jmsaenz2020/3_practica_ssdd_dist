@@ -16,10 +16,10 @@ func main(){
   v.CrearIncidencia(1, "Luna delantera rota")
   v.Incidencia.AsignarMecanico(t.Mecanicos[0])
   c.CrearVehiculo(v, &t)
-  //v = taller.Vehiculo{Matricula: 1235, Marca: "Toyota", Modelo: "Camry", FechaEntrada: "14-04-2009", FechaSalida: "19-04-2009"}
-  //v.CrearIncidencia(1, "Luna delantera rota")
-  //v.Incidencia.AsignarMecanico(t.Mecanicos[0])
-  //c.CrearVehiculo(v, &t)
+  v = taller.Vehiculo{Matricula: 1235, Marca: "Toyota", Modelo: "Camry", FechaEntrada: "14-04-2009", FechaSalida: "19-04-2009"}
+  v.CrearIncidencia(1, "Luna delantera rota")
+  v.Incidencia.AsignarMecanico(t.Mecanicos[0])
+  c.CrearVehiculo(v, &t)
   t.CrearCliente(c)
   // FIN INICIALIZAR
 

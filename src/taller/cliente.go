@@ -13,45 +13,6 @@ type Cliente struct{
   Vehiculos []Vehiculo
 }
 
-func (c *Cliente) Inicializar(t *Taller){
-  var exit bool = false
-
-  utils.BoldMsg("ID")
-  utils.LeerInt(&c.Id)
-  if c.Id == 0{
-    exit = true
-  }
-
-  if !exit{
-    utils.BoldMsg("Nombre")
-    utils.LeerStr(&c.Nombre)
-    if len(c.Nombre) == 0{
-      exit = true
-    }
-  }
-
-  if !exit{
-    utils.BoldMsg("Telefono")
-    utils.LeerInt(&c.Telefono)
-    if c.Telefono == 0{
-      exit = true
-    }
-  }
-
-  if !exit{
-    utils.BoldMsg("Email")
-    utils.LeerStr(&c.Email)
-    if len(c.Email) == 0{
-      exit = true
-    }
-  }
-
-  // Ya está creado el cliente base (sin vehículos)
-  if !exit{
-    c.MenuVehiculos(t)
-  }
-}
-
 func (c Cliente) Info() (string){
   return fmt.Sprintf("%s (%08d)", c.Nombre, c.Id)
 }
@@ -63,42 +24,6 @@ func (c Cliente) Visualizar(){
   fmt.Printf("%sEmail: %s%s\n", utils.BOLD, utils.END, c.Email)
   fmt.Printf("%sVehiculos:%s\n", utils.BOLD, utils.END)
   c.ListarVehiculos()
-}
-
-func (c *Cliente) MenuVehiculos(t *Taller){
-  var v Vehiculo  
-  menu := []string{
-    "Seleccione un vehículo",
-    "Crear vehículo",
-    "Eliminar vehículo"}
-
-  for{
-    menu = []string{
-      "Seleccione un vehículo",
-      "Crear vehículo",
-      "Eliminar vehículo"}
-    for _, v := range c.Vehiculos{
-      menu = append(menu, v.Info())
-    }
-
-    opt, status := utils.MenuFunc(menu)
-
-    if status == 0{
-      if opt == 1{
-        v.Inicializar()
-        c.CrearVehiculo(v, t)
-      } else if opt == 2{
-        v = c.SeleccionarVehiculo()
-        if v.Valido(){
-          c.EliminarVehiculo(v)
-        }
-      } else {
-        c.Vehiculos[opt - 3].Menu()
-      }
-    } else if status == 2{
-      break
-    }
-  }
 }
 
 func (c *Cliente) CrearVehiculo(v Vehiculo, t *Taller){
@@ -142,73 +67,6 @@ func (c Cliente) ListarVehiculos(){
     }
   } else {
     utils.BoldMsg("SIN VEHICULOS")
-  }
-}
-
-func (c *Cliente) Menu(t *Taller){
-  menu := []string{
-    "Menu de cliente",
-    "Visualizar",
-    "Modificar"}
-
-  for{
-    menu[0] = fmt.Sprintf("Menu de %s", c.Nombre)
-
-    opt, status := utils.MenuFunc(menu)
-
-    if status == 0{
-      switch opt{
-        case 1:
-          c.Visualizar()
-        case 2:
-          c.Modificar(t)
-        default:
-          continue
-      }
-    } else if status == 2{
-      break
-    }
-  }
-}
-
-func (c *Cliente) Modificar(t *Taller){
-  menu := []string{
-    "Modificar datos de cliente",
-    "ID",
-    "Nombre",
-    "Teléfono",
-    "Email",
-    "Vehiculos"}
-  var buf string
-  var num int
-
-  for{
-    menu[0] = fmt.Sprintf("Modificar datos de %s", c.Nombre)
-    opt, status := utils.MenuFunc(menu)
-    if status == 0{
-      switch opt{
-        case 1:
-          utils.LeerInt(&num)
-          c.Id = num
-          utils.InfoMsg("ID modificado")
-        case 2:
-          utils.LeerStr(&buf)
-          c.Nombre = buf
-          utils.InfoMsg("Nombre modificado")
-        case 3:
-          utils.LeerInt(&num)
-          c.Telefono = num
-          utils.InfoMsg("Teléfono modificado")
-        case 4:
-          utils.LeerStr(&buf)
-          c.Email = buf
-          utils.InfoMsg("Email modificado")
-        case 5:
-          c.MenuVehiculos(t)
-      }
-    } else if status == 2{
-      break
-    }
   }
 }
 
