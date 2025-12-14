@@ -12,7 +12,7 @@ const TIEMPO_BAJA = 1
 
 type Incidencia struct{
   Id int
-  Mecanicos []Mecanico
+  Mecanico Mecanico
   Tipo int // 1 (Mecánica), 2 (Electrónica), 3(Carrocería)
   Prioridad int // 1 a 3 (Alta a baja)
   Descripcion string
@@ -21,23 +21,6 @@ type Incidencia struct{
 
 func (i Incidencia) Info() (string){
   return fmt.Sprintf("%s (%03d)", i.Descripcion, i.Id)
-}
-
-func (i Incidencia) Visualizar(){
-  fmt.Printf("%sId: %s%03d\n", utils.BOLD, utils.END, i.Id)
-  fmt.Printf("%sTipo: %s%d\n", utils.BOLD, utils.END, i.Tipo)
-  fmt.Printf("%sPrioridad: %s%d\n", utils.BOLD, utils.END, i.Prioridad)
-  fmt.Printf("%sDescripción: %s%s\n", utils.BOLD, utils.END, i.Descripcion)
-  fmt.Printf("%sEstado: %s%d\n", utils.BOLD, utils.END, i.Estado)
-  utils.BoldMsg("MECÁNICOS")
-  if len(i.Mecanicos) > 0{
-    for _, m := range i.Mecanicos{
-      fmt.Printf("  ·%s", m.Info())
-    }
-    fmt.Println()
-  } else {
-    utils.BoldMsg("SIN MECÁNICOS")
-  }
 }
 
 func (i Incidencia) ObtenerDuracion() (time.Duration){
@@ -64,25 +47,16 @@ func (i1 Incidencia) Igual(i2 Incidencia) (bool){
 }
 
 func (i Incidencia) TieneMecanico(m_in Mecanico) (bool){
-  var tiene bool = false
-
-  for _, m := range i.Mecanicos{
-    fmt.Println(m.Info())
-    if m.Igual(m_in){
-      tiene = true
-    }
-  }
-
-  return tiene
+  return i.Mecanico.Igual(m_in)
 }
 
 func (i *Incidencia) AsignarMecanico(m Mecanico){
-  if !i.TieneMecanico(m){
-    i.Mecanicos = append(i.Mecanicos, m)
+  if !i.Mecanico.Valido(){
+    i.Mecanico = m
     if i.Estado == 1{
       i.Estado = 2
     }
   } else {
-    utils.ErrorMsg("El mecánico ya esta incidencia asignada")
+    utils.ErrorMsg("La incidencia ya tiene un mecánico atendiendola")
   }
 }

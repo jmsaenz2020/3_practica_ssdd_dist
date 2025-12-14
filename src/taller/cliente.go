@@ -35,22 +35,11 @@ func (c *Cliente) CrearVehiculo(v Vehiculo, t *Taller){
   if v.Valido() && c.ObtenerIndiceVehiculo(v) == -1{
     c.Vehiculos = append(c.Vehiculos, v)
     if v.Incidencia.Valido(){
+      t.Grupo.Add(1)
       go c.Vehiculos[len(c.Vehiculos) - 1].Rutina(t)
     }
   } else {
     utils.ErrorMsg("No se ha podido crear el vehículo")
-  }
-}
-
-func (c *Cliente) ModificarIncidenciaVehiculo(v Vehiculo, tipo int, desc string, t *Taller){
-  var indice int = c.ObtenerIndiceVehiculo(v)
-
-  if v.Valido() && indice >= 0 && !t.CocheEnTaller(v){
-    c.Vehiculos[indice].ModificarIncidencia(tipo, desc)
-    t.Grupo.Add(1)
-    go c.Vehiculos[indice].Rutina(t)
-  } else {
-    utils.ErrorMsg("El vehiculo no existe o no está en propiedad del cliente")
   }
 }
 

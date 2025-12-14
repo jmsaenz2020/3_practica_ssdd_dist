@@ -21,7 +21,5 @@ func ValoresBasicos() (Taller){
 
 func TestBasicos(test *testing.T){
   taller := ValoresBasicos()
-  
-  taller.Grupo.Wait()
   taller.Liberar()
 }

@@ -6,7 +6,7 @@ import (
   "3_practica_ssdd_dist/utils"
 )
 
-const TIEMPO_ESPERA = 15 * time.Second
+const TIEMPO_ESPERA = 15
 const NUM_FASES = 4
 const MAX_MATRICULA = 100000 - 1
 
@@ -55,7 +55,18 @@ func (v Vehiculo)Log(fase int, inicio time.Time){
 func (v *Vehiculo)Rutina(t *Taller){
   defer t.Grupo.Done()
 
-  t.Grupo.Add(1)
+  if !v.Incidencia.Mecanico.Valido(){
+    for delay := 0; delay <= TIEMPO_ESPERA; delay++{
+      if delay == TIEMPO_ESPERA{
+        t.AsignarMecanicoAutomatico(v)
+      }
+      time.Sleep(1*time.Second)
+      if v.Incidencia.Mecanico.Valido(){
+        break
+      }
+    }
+  }
+
   ok := t.AsignarPlaza(v)
 
   if ok{
@@ -66,14 +77,15 @@ func (v *Vehiculo)Rutina(t *Taller){
       time.Sleep(v.Incidencia.ObtenerDuracion())
       if i == NUM_FASES{
         v.Incidencia.Estado = 0
+        v.Log(i, t.TiempoInicio)
       } else {
         v.Incidencia.Estado = 1
       }
-      v.Log(i, t.TiempoInicio)
     }
 
     t.SalirVehiculo(v)
   }
+
 }
 
 func (v *Vehiculo) ModificarIncidencia(tipo int, descripcion string){

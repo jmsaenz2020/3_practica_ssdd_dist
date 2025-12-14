@@ -7,11 +7,14 @@ import (
   "3_practica_ssdd_dist/utils"
 )
 
-const PLAZAS_MECANICO = 2
+const NUM_MECANICOS = 1
+const NUM_PLAZAS = 1
 
 type Taller struct{
   Clientes []Cliente
   Plazas chan *Vehiculo
+  NumPlazas int
+  NumMecanicos int
   Mecanicos []Mecanico
   UltimoIdMecanico int
   UltimoIdIncidencia int
@@ -21,13 +24,12 @@ type Taller struct{
 }
 
 func (t *Taller)Inicializar(){
-  t.Plazas = make(chan *Vehiculo)
+  t.Plazas = make(chan *Vehiculo, NUM_PLAZAS)
   t.TiempoInicio = time.Now()
 }
 
 func (t *Taller)Liberar(){
   t.Grupo.Wait()
-  t.Cerradura.Lock()
   select{
     case _, ok := <- t.Plazas:
       if !ok && len(t.Plazas) == 0{
@@ -36,7 +38,6 @@ func (t *Taller)Liberar(){
     default:
       close(t.Plazas)
   }
-  t.Cerradura.Unlock()
 }
 
 func (t Taller) CocheEnTaller(v Vehiculo) (bool){
@@ -49,7 +50,7 @@ func (t Taller) CocheEnTaller(v Vehiculo) (bool){
 func (t Taller) HayEspacio() (bool){
   vehiculos := t.ObtenerPlazas()
 
-  return len(vehiculos) < PLAZAS_MECANICO*len(t.Mecanicos)
+  return len(vehiculos) <= NUM_PLAZAS
 }
 
 func (t *Taller) AsignarPlaza(v *Vehiculo) (bool){
@@ -88,19 +89,14 @@ func (t *Taller) SalirVehiculo(v *Vehiculo){
   t.Cerradura.Unlock()
 }
 
-func (t *Taller)ModificarTaller(){
-  taller := make(chan *Vehiculo, PLAZAS_MECANICO*len(t.Mecanicos))
-
-  select{
-    case p := <- t.Plazas:
-      taller <- p
-    default:
-      close(taller)
+func (t *Taller) AsignarMecanicoAutomatico(v *Vehiculo){
+  if t.HayEspacio(){
+    for _, m := range(t.ObtenerMecanicosDisponibles()){
+      if m.Especialidad == v.Incidencia.Tipo{
+        v.Incidencia.AsignarMecanico(m)
+      }
+    }
   }
-
-  t.Cerradura.Lock()
-  t.Plazas = taller
-  t.Cerradura.Unlock()
 }
 
 func (t *Taller) CrearMecanico(nombre string, especialidad int, experiencia int){
@@ -111,47 +107,17 @@ func (t *Taller) CrearMecanico(nombre string, especialidad int, experiencia int)
   m.Experiencia = experiencia
   m.Id = t.UltimoIdMecanico + 1
 
-  if m.Valido() && t.ObtenerIndiceMecanico(m) == -1{
+  if m.Valido(){
     t.UltimoIdMecanico++
-    m.Id = t.UltimoIdMecanico
-    m.Alta = true
     t.Mecanicos = append(t.Mecanicos, m)
-    go t.ModificarTaller()
-  } else {
-    utils.ErrorMsg("No se ha podido crear al mecanico")
+  } else{
+    utils.ErrorMsg("Mecanico no se ha podido crear")
   }
 }
 
 func (t *Taller) CrearCliente(c Cliente){
   if c.Valido(){
     t.Clientes = append(t.Clientes, c)
-  }
-}
-
-func (t *Taller) EliminarMecanico(m Mecanico){
-  
-  indice := t.ObtenerIndiceMecanico(m)
-    
-  if indice >= 0{ // Eliminar
-    lista := t.Mecanicos
-    lista[indice] = lista[len(lista)-1]
-    lista = lista[:len(lista)-1]
-    t.Mecanicos = lista
-  } else {
-    utils.ErrorMsg("No se pudo eliminar al mecánico")
-  }
-}
-
-func (t *Taller) EliminarCliente(c Cliente){
-  indice := t.ObtenerIndiceCliente(c)
-    
-  if indice >= 0{ // Eliminar
-    lista := t.Clientes
-    lista[indice] = lista[len(lista)-1]
-    lista = lista[:len(lista)-1]
-    t.Clientes = lista
-  } else {
-    utils.ErrorMsg("No se pudo eliminar al mecánico")
   }
 }
 

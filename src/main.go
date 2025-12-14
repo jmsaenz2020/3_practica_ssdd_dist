@@ -8,6 +8,7 @@ import (
 
 const sims = 1
 const NUM_COCHES = 1
+const NUM_MECANICOS = 1
 
 func generarDatosCliente() (taller.Cliente){
   var c taller.Cliente
@@ -26,12 +27,15 @@ func valoresBasicos() (taller.Taller){
   var c taller.Cliente
 
   t.Inicializar()
-  t.CrearMecanico("Pepe", 0, 0)
+  for n := 0; n < NUM_MECANICOS; n++{
+    t.CrearMecanico("Mecanico", 0, 0)
+  }
   c = generarDatosCliente()
 
   for n := 0; n < NUM_COCHES; n++{
     v = taller.Vehiculo{Matricula: rand.Int()%taller.MAX_MATRICULA + 1, Marca: "Toyota", Modelo: "Camry", FechaEntrada: "14-04-2009", FechaSalida: "19-04-2009"}
-    v.ModificarIncidencia(3, "Incidencia")
+    v.ModificarIncidencia(rand.Int()%3 + 1, "Incidencia")
+    v.Incidencia.AsignarMecanico(t.Mecanicos[0])
     c.CrearVehiculo(v, &t)
   }
   t.CrearCliente(c)
